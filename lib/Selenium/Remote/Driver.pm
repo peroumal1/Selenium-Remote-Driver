@@ -182,7 +182,7 @@ sub new {
     $self->new_session(delete $args{extra_capabilities});
 
     if ( !( defined $self->{session_id} ) ) {
-        croak "Could not establish a session with the remote server\n";
+        croak "Could not establish a session with the remote server (is webdriver running?)\n";
     }
 
     return $self;
@@ -251,7 +251,7 @@ sub new_session {
         $self->{session_id} = $resp->{'sessionId'};
     }
     else {
-        croak "Could not create new session";
+        croak "Could not create new session (is webdriver running?)";
     }
 }
 

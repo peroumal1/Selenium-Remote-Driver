@@ -21,13 +21,7 @@ sub new {
                  base_path          => $base_path || '/wd/hub/',
     };
     bless $self, $class or die "Can't bless $class: $!";
-    #my $status = eval {$self->request('GET','status');};
-    #croak "Could not connect to SeleniumWebDriver" if($@);
-    #if($status->{cmd_status} eq 'OK') {
     return $self;
-    #} else {
-    #  croak "Selenium server did not return proper status";
-    #}
 }
 
 # This request method is tailored for Selenium RC server
@@ -77,8 +71,10 @@ sub _process_response {
     else {
         my $decoded_json = undef; 
         if (($response->message ne 'No Content') && ($response->content ne '')) {
-            $decoded_json = $json->allow_nonref(1)->utf8(1)->decode($response->content);
-            $data->{'sessionId'} = $decoded_json->{'sessionId'};
+            $decoded_json = eval {$json->allow_nonref(1)->utf8(1)->decode($response->content);};
+            if(!$@) {
+              $data->{'sessionId'} = $decoded_json->{'sessionId'};
+            }
         }
         
         if ($response->is_error) {
