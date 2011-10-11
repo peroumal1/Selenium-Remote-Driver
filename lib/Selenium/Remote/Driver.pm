@@ -174,11 +174,11 @@ sub new {
     else {
         $self->{javascript} = JSON::true;
     }
-
+    my $base_path = $self->{browser_name} eq 'iphone' ? '/hub/' : '/wd/hub/';
     # Connect to remote server & establish a new session
     $self->{remote_conn} =
       new Selenium::Remote::RemoteConnection( $self->{remote_server_addr},
-        $self->{port} );
+        $self->{port}, $base_path );
     $self->new_session(delete $args{extra_capabilities});
 
     if ( !( defined $self->{session_id} ) ) {

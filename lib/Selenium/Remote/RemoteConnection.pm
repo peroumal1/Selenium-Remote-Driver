@@ -13,20 +13,21 @@ use JSON;
 use Selenium::Remote::ErrorHandler;
 
 sub new {
-    my ($class, $remote_srvr, $port) = @_;
+    my ($class, $remote_srvr, $port, $base_path) = @_;
     
     my $self = {
                  remote_server_addr => $remote_srvr,
                  port               => $port,
+                 base_path          => $base_path || '/wd/hub/',
     };
     bless $self, $class or die "Can't bless $class: $!";
-    my $status = eval {$self->request('GET','status');};
-    croak "Could not connect to SeleniumWebDriver" if($@);
-    if($status->{cmd_status} eq 'OK') {
-      return $self;
-    } else {
-      croak "Selenium server did not return proper status";
-    }
+    #my $status = eval {$self->request('GET','status');};
+    #croak "Could not connect to SeleniumWebDriver" if($@);
+    #if($status->{cmd_status} eq 'OK') {
+    return $self;
+    #} else {
+    #  croak "Selenium server did not return proper status";
+    #}
 }
 
 # This request method is tailored for Selenium RC server
@@ -44,7 +45,9 @@ sub request {
             "http://"
           . $self->{remote_server_addr} . ":"
           . $self->{port}
-          . "/wd/hub/$url";
+          . $self->{base_path}
+          #. "/wd/hub/"
+          . $url;
     }
 
     if ((defined $params) && $params ne '') {
