@@ -1,0 +1,476 @@
+{ 
+    "version": "0.1",
+    "name": "JSON Wire Protocol Spore specification"
+    "methods": { 
+        "status": { 
+            "method": "GET", 
+            "path": "/status"
+        },
+        "newSession": {
+            "method": "POST", 
+            "path":"/session"
+        },
+        "getSessions": { 
+            "method": "GET",
+            "path":"/sessions"
+        },
+        "getCapabilities": { 
+            "method": "GET",
+            "path":"/session/:sessionId"
+            "required_params": ["sessionId"] 
+        },
+        "setTimeout": {
+            "method":"POST", 
+            "path":"/session/:sessionId/timeouts",
+            "required_params": ["sessionId"]
+        },
+        "setAsyncScriptTimeout": {
+            "method":"POST", 
+            "path":"/session/:sessionId/timeouts/async_script",
+            "required_params": ["sessionId"]
+        },
+        "setImplicitWaitTimeout": {
+            "method":"POST", 
+            "path":"/session/:sessionId/timeouts/implicit_wait",
+            "required_params": ["sessionId"]
+        },
+        "quit": {
+            "method":"DELETE",
+            "path":"/session/:sessionId",
+            "required_params": ["sessionId"]
+        },
+        "getCurrentWindowHandle": { 
+            "method": "GET",
+            "path":"/session/:sessionId/window_handle",
+            "required_params": ["sessionId"]
+        },
+        "getWindowHandles": { 
+            "method": "GET", 
+            "path":"/session/:sessionId/window_handles"
+            "required_params": ["sessionId"]
+        },
+        "getWindowSize": { 
+            "method": "GET", 
+            "path":"/session/:sessionId/window/:windowHandle/size",
+            "required_params": ["sessionId", "windowHandle"]
+        },
+        "getWindowPosition": { 
+            "method": "GET", 
+            "path":"/session/:sessionId/window/:windowHandle/position",
+            "required_params": ["sessionId", "windowHandle"]
+        },
+        "setWindowSize": { 
+            "method":"POST", 
+            "path":"/session/:sessionId/window/:windowHandle/size",
+            "required_params": ["sessionId", "windowHandle"]
+        },
+        "setWindowPosition": { 
+            "method":"POST", 
+            "path":"/session/:sessionId/window/:windowHandle/position",
+            "required_params": ["sessionId", "windowHandle"]
+        },
+        "uploadFile" : {
+            "path" : "/session/:sessionId/file",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "toggleElement" : {
+            "path" : "/session/:sessionId/element/:id/toggle",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "findChildElements" : {
+            "path" : "/session/:sessionId/element/:id/elements",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "deleteCookieNamed" : {
+            "path" : "/session/:sessionId/cookie/:name",
+            "method" : "DELETE",
+            "required_params" : [
+                "sessionId",
+                "name"
+            ]
+        },
+        "getElementText" : {
+            "path" : "/session/:sessionId/element/:id/text",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getElementTagName" : {
+            "path" : "/session/:sessionId/element/:id/name",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getActiveElement" : {
+            "path" : "/session/:sessionId/element/active",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "findElements" : {
+            "path" : "/session/:sessionId/elements",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "executeAsyncScript" : {
+            "path" : "/session/:sessionId/execute_async",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "goForward" : {
+            "path" : "/session/:sessionId/forward",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "refresh" : {
+            "path" : "/session/:sessionId/refresh",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "getElementLocationInView" : {
+            "path" : "/session/:sessionId/element/:id/location_in_view",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "addCookie" : {
+            "path" : "/session/:sessionId/cookie",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "sendKeysToElement" : {
+            "path" : "/session/:sessionId/element/:id/value",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getElementAttribute" : {
+            "path" : "/session/:sessionId/element/:id/attribute/:name",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id",
+                "name"
+            ]
+        },
+        "buttonDown" : {
+            "path" : "/session/:sessionId/buttondown",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "mouseMoveToLocation" : {
+            "path" : "/session/:sessionId/moveto",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "doubleClick" : {
+            "path" : "/session/:sessionId/doubleclick",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "getElementSize" : {
+            "path" : "/session/:sessionId/element/:id/size",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "isElementDisplayed" : {
+            "path" : "/session/:sessionId/element/:id/displayed",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "elementEquals" : {
+            "path" : "/session/:sessionId/element/:id/equals/:other",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id",
+                "other"
+            ]
+        },
+        "sendKeysToPrompt" : {
+            "path" : "/session/:sessionId/alert_text",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "isElementSelected" : {
+            "path" : "/session/:sessionId/element/:id/selected",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getCurrentUrl" : {
+            "path" : "/session/:sessionId/url",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "goBack" : {
+            "path" : "/session/:sessionId/back",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "setElementSelected" : {
+            "path" : "/session/:sessionId/element/:id/selected",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getTitle" : {
+            "path" : "/session/:sessionId/title",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "clickElement" : {
+            "path" : "/session/:sessionId/element/:id/click",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "sendModifier" : {
+            "path" : "/session/:sessionId/modifier",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "getPageSource" : {
+            "path" : "/session/:sessionId/source",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "close" : {
+            "path" : "/session/:sessionId/window",
+            "method" : "DELETE",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "dragElement" : {
+            "path" : "/session/:sessionId/element/:id/drag",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "get" : {
+            "path" : "/session/:sessionId/url",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "availableEngines" : {
+            "path" : "/session/:sessionId/ime/available_engines",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "sendKeysToActiveElement" : {
+            "path" : "/session/:sessionId/keys",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "clearElement" : {
+            "path" : "/session/:sessionId/element/:id/clear",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getElementLocation" : {
+            "path" : "/session/:sessionId/element/:id/location",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "acceptAlert" : {
+            "path" : "/session/:sessionId/accept_alert",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "findElement" : {
+            "path" : "/session/:sessionId/element",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "switchToFrame" : {
+            "path" : "/session/:sessionId/frame",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "buttonUp" : {
+            "path" : "/session/:sessionId/buttonup",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "isElementEnabled" : {
+            "path" : "/session/:sessionId/element/:id/enabled",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "getAlertText" : {
+            "path" : "/session/:sessionId/alert_text",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "executeScript" : {
+            "path" : "/session/:sessionId/execute",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "findChildElement" : {
+            "path" : "/session/:sessionId/element/:id/element",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "click" : {
+            "path" : "/session/:sessionId/click",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "dismissAlert" : {
+            "path" : "/session/:sessionId/dismiss_alert",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "submitElement" : {
+            "path" : "/session/:sessionId/element/:id/submit",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "describeElement" : {
+            "path" : "/session/:sessionId/element/:id",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id"
+            ]
+        },
+        "deleteAllCookies" : {
+            "path" : "/session/:sessionId/cookie",
+            "method" : "DELETE",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "switchToWindow" : {
+            "path" : "/session/:sessionId/window",
+            "method" : "POST",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "getElementValueOfCssProperty" : {
+            "path" : "/session/:sessionId/element/:id/css/:propertyName",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId",
+                "id",
+                "propertyName"
+            ]
+        },
+        "getAllCookies" : {
+            "path" : "/session/:sessionId/cookie",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        },
+        "screenshot" : {
+            "path" : "/session/:sessionId/screenshot",
+            "method" : "GET",
+            "required_params" : [
+                "sessionId"
+            ]
+        }
+    }
+}
