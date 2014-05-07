@@ -46,7 +46,14 @@ DESIRED_CAPABILITIES: {
         sessionId => '123124123'
     };
 
-    $tua->map_response(qr{status}, HTTP::Response->new(200, 'OK'));
+    $tua->map_response(
+        qr{status},
+        HTTP::Response->new(
+            200, 'OK',
+            HTTP::Headers->new( 'Content-Type' => 'application/json' ),
+            to_json( {} )
+        )
+    );
 
     my $requests_count = 0;
     my $mock_session_handler = sub {

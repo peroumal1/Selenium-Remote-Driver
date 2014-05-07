@@ -4,6 +4,7 @@ use warnings;
 
 use LWP::Protocol::PSGI 0.04;
 use JSON;
+use Test::Deep::NoTest;
 
 our $MockSeleniumWebDriverObj;
 
@@ -57,14 +58,15 @@ sub psgi_app {
   }
   my $req_index = \$self->{req_index};
   if (!$self->{record}) {
+    $DB::single = 1;
     my $expected = $self->{req_resp}->[$$req_index]->{request}->{content};
-    $expected = $expected eq "" ? $expected : decode_json($expected);
-    my $actual = $content eq "" ? $content : decode_json($content);
+    $expected = $expected eq "" ? $expected : JSON->new->utf8(1)->allow_nonref->decode($expected);
+    my $actual = $content eq "" ? $content : JSON->new->utf8(1)->allow_nonref->decode($content);
 
     if (  $self->{req_resp}->[$$req_index]->{request}->{verb} eq $env->{REQUEST_METHOD}
       and $self->{req_resp}->[$$req_index]->{request}->{uri} eq $uri
       and (   $self->{req_resp}->[$$req_index]->{request}->{content} eq $content
-           or deeply_equal($expected, $actual)))  {
+           or eq_deeply($expected, $actual)))  {
       return $self->{req_resp}->[$$req_index++]->{response};
     } else {
       die
