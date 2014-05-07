@@ -30,8 +30,7 @@ if (!$record && !(-e "t/mock-recordings/$mock_file")) {
     plan skip_all => "Mocking of tests is not been enabled for this platform";
 }
 t::lib::MockSeleniumWebDriver::register($record,"t/mock-recordings/$mock_file");
-
-my $driver = Selenium::Remote::Driver->new(browser_name => 'firefox');
+my $driver = Selenium::Remote::Driver->new(browser_name => 'firefox', testing => 1);
 my $website = 'http://localhost:63636';
 my $ret;
 
@@ -53,7 +52,7 @@ DESIRED_CAPABILITIES: {
     my $mock_session_handler = sub {
         my $request = shift;
         $requests_count++;
-
+        $DB::single = 1;
         if ($request->method eq 'POST') {
             my $caps = from_json($request->decoded_content)->{desiredCapabilities};
 
@@ -84,6 +83,7 @@ DESIRED_CAPABILITIES: {
 
     my $caps_driver = Selenium::Remote::Driver->new_from_caps(
         auto_close => 0,
+        testing => 1,
         browser_name => 'not firefox',
         platform => 'WINDOWS',
         desired_capabilities => {
@@ -97,6 +97,7 @@ DESIRED_CAPABILITIES: {
 
     $caps_driver = Selenium::Remote::Driver->new(
         auto_close => 0,
+        testing => 1,
         browser_name => 'not firefox',
         platform => 'WINDOWS',
         desired_capabilities => {
@@ -107,8 +108,7 @@ DESIRED_CAPABILITIES: {
     );
 
     ok($caps_driver->auto_close eq 0, 'and other properties are set if we use the normal constructor');
-
-    $caps_driver = Selenium::Remote::Driver->new_from_caps(ua => $tua);
+    $caps_driver = Selenium::Remote::Driver->new_from_caps(ua => $tua,testing =>1);
     ok($requests_count == 3, 'The new_from_caps section has the correct number of requests to /session/');
 }
 
@@ -305,7 +305,8 @@ PAUSE: {
 AUTO_CLOSE: {
     my $stayOpen = Selenium::Remote::Driver->new(
         browser_name => 'firefox',
-        auto_close => 0
+        auto_close => 0,
+        testing => 1
     );
 
     $stayOpen->DESTROY();

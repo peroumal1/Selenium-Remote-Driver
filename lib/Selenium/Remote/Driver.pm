@@ -304,7 +304,8 @@ has 'remote_conn' => (
         return Selenium::Remote::RemoteConnection->new(
             remote_server_addr => $self->remote_server_addr,
             port               => $self->port,
-            ua                 => $self->ua
+            ua                 => $self->ua,
+            testing            => $self->testing
         );
     },
 );
@@ -314,10 +315,6 @@ has 'ua' => (
     builder => sub { return LWP::UserAgent->new }
 );
 
-has 'commands' => (
-    is      => 'lazy',
-    builder => sub { return Selenium::Remote::Commands->new; },
-);
 
 has 'auto_close' => (
     is      => 'rw',
@@ -429,12 +426,12 @@ sub DEMOLISH {
 # (url & JSON), send commands & receive processed response from the server.
 sub _execute_command {
     my ( $self, $res, $params ) = @_;
-    $res->{'session_id'} = $self->session_id;
-    my $resource = $self->commands->get_params($res);
-    if ($resource) {
-        my $resp =
-          $self->remote_conn->request( $resource->{'method'},
-            $resource->{'url'}, $params );
+    $params->{'session_id'} = $self->session_id;
+    my $rest_meth = $res->{command};
+    my $rest_client = $self->remote_conn->rest_client; 
+    if (can_ok($rest_client,$rest_meth)) { 
+        my $raw_response  = $rest_client->$rest_meth($params);
+        my $resp = $self->remote_conn->_process_response($raw_response);
         if ( ref($resp) eq 'HASH' ) {
             if ( $resp->{cmd_status} && $resp->{cmd_status} eq 'OK' ) {
                 return $resp->{cmd_return};
@@ -461,7 +458,7 @@ sub _execute_command {
         return $resp;
     }
     else {
-        croak "Couldn't retrieve command settings properly\n";
+        croak "'$rest_meth' is not supported";
     }
 }
 
@@ -506,10 +503,8 @@ sub _request_new_session {
 
     # command => 'newSession' to fool the tests of commands implemented
     # TODO: rewrite the testing better, this is so fragile.
-    my $resp = $self->remote_conn->request(
-        $self->commands->get_method('newSession'),
-        $self->commands->get_url('newSession'), $args,
-    );
+    my $resp = $self->remote_conn->newSession($args);
+    $resp = $self->remote_conn->_process_response($resp);
     if ( ( defined $resp->{'sessionId'} ) && $resp->{'sessionId'} ne '' ) {
         $self->session_id( $resp->{'sessionId'} );
     }

@@ -1,10 +1,14 @@
 { 
     "version": "0.1",
-    "name": "JSON Wire Protocol Spore specification"
+    "name": "JSON Wire Protocol Spore specification",
     "methods": { 
         "status": { 
             "method": "GET", 
             "path": "/status"
+        },
+        "grid_status" : { 
+            "path": "/grid/api/testsession",
+            "method": "GET"
         },
         "newSession": {
             "method": "POST", 
@@ -16,7 +20,7 @@
         },
         "getCapabilities": { 
             "method": "GET",
-            "path":"/session/:sessionId"
+            "path":"/session/:sessionId",
             "required_params": ["sessionId"] 
         },
         "setTimeout": {
@@ -46,7 +50,7 @@
         },
         "getWindowHandles": { 
             "method": "GET", 
-            "path":"/session/:sessionId/window_handles"
+            "path":"/session/:sessionId/window_handles",
             "required_params": ["sessionId"]
         },
         "getWindowSize": { 
@@ -471,6 +475,6 @@
             "required_params" : [
                 "sessionId"
             ]
-        }
+        } 
     }
 }
