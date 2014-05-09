@@ -389,20 +389,21 @@ sub BUILD {
     my $self = shift;
 
     # disable server connection when testing attribute is on
-    unless ($self->testing) {
+    # unless ($self->testing) {
 
         if ($self->has_desired_capabilities) {
             $self->new_desired_session( $self->desired_capabilities );
         }
         else {
             # Connect to remote server & establish a new session
+            $DB::single = 1;
             $self->new_session( $self->extra_capabilities );
         }
 
         if ( !( defined $self->session_id ) ) {
             croak "Could not establish a session with the remote server\n";
         }
-    }
+    # }
 }
 
 sub new_from_caps {
@@ -503,7 +504,7 @@ sub _request_new_session {
 
     # command => 'newSession' to fool the tests of commands implemented
     # TODO: rewrite the testing better, this is so fragile.
-    my $resp = $self->remote_conn->newSession($args);
+    my $resp = $self->remote_conn->rest_client->newSession($args);
     $resp = $self->remote_conn->_process_response($resp);
     if ( ( defined $resp->{'sessionId'} ) && $resp->{'sessionId'} ne '' ) {
         $self->session_id( $resp->{'sessionId'} );

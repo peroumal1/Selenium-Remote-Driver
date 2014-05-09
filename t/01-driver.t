@@ -59,7 +59,6 @@ DESIRED_CAPABILITIES: {
     my $mock_session_handler = sub {
         my $request = shift;
         $requests_count++;
-        $DB::single = 1;
         if ($request->method eq 'POST') {
             my $caps = from_json($request->decoded_content)->{desiredCapabilities};
 
@@ -115,6 +114,7 @@ DESIRED_CAPABILITIES: {
     );
 
     ok($caps_driver->auto_close eq 0, 'and other properties are set if we use the normal constructor');
+    $DB::single = 1;
     $caps_driver = Selenium::Remote::Driver->new_from_caps(ua => $tua,testing =>1);
     ok($requests_count == 3, 'The new_from_caps section has the correct number of requests to /session/');
 }
