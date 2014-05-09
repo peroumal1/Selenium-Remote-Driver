@@ -429,7 +429,7 @@ sub _execute_command {
     $params->{'session_id'} = $self->session_id;
     my $rest_meth = $res->{command};
     my $rest_client = $self->remote_conn->rest_client; 
-    if (can_ok($rest_client,$rest_meth)) { 
+    if ($rest_client->can($rest_meth)) { 
         my $raw_response  = $rest_client->$rest_meth($params);
         my $resp = $self->remote_conn->_process_response($raw_response);
         if ( ref($resp) eq 'HASH' ) {
