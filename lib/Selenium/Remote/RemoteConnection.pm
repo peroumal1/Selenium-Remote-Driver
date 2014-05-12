@@ -25,11 +25,6 @@ has 'port' => (
 );
 
 
-has 'testing' => (
-    is      => 'rw',
-    default => sub {0},
-);
-
 has 'debug' => (
     is      => 'rw',
     default => sub {0}
@@ -45,17 +40,25 @@ has 'rest_client' => (
     builder => sub {
         my $self = shift;
         my $json_wire_spec;
-        if ( $self->testing ) {
+        try {
+            $json_wire_spec = dist_file(
+                'Selenium-Remote-Driver',
+                'config/json_wire_protocol.json'
+            );
+        }
+        catch {
+
             my $obj =
               Test::File::ShareDir::Object::Dist->new(
                 dists => { "Selenium-Remote-Driver" => "share/" } );
             $obj->install_all_dists;
             $obj->add_to_inc;
-        }
-        $json_wire_spec = dist_file(
-            'Selenium-Remote-Driver',
-            'config/json_wire_protocol.json'
-        );
+            $json_wire_spec = dist_file(
+                'Selenium-Remote-Driver',
+                'config/json_wire_protocol.json'
+            );
+        };
+
         my $rest_client = Net::HTTP::Knork->new(
             client   => $self->ua,
             base_url => "http://"
@@ -63,6 +66,7 @@ has 'rest_client' => (
               . $self->port,
             spec => $json_wire_spec
         );
+        croak "Can't instantiate rest client" unless ( defined($rest_client) );
         $rest_client->add_middleware(
             {   on_request => sub {
                     my $req = shift;
@@ -81,9 +85,11 @@ has 'rest_client' => (
                 },
                 on_response => sub {
                     my $resp = shift;
-                    if ($resp->header('Content-Type') =~ m/json/) {
-                        $resp->content( JSON->new->utf8(1)
-                            ->allow_nonref->decode( $resp->content ) );
+                    if ( defined( $resp->header('Content-Type') ) ) {
+                        if ( $resp->header('Content-Type') =~ m/json/ ) {
+                            $resp->content( JSON->new->utf8(1)
+                                  ->allow_nonref->decode( $resp->content ) );
+                        }
                     }
                     return $resp;
                   }
@@ -103,7 +109,6 @@ sub BUILD {
     catch {
         croak "Could not connect to SeleniumWebDriver: $_";
     };
-    $DB::single = 1;
     if ( $status->{cmd_status} ne 'OK' ) {
 
         # Could be grid, see if we can talk to it
@@ -162,9 +167,13 @@ sub _process_response {
         }
     }
     else {
-
+        if ($response->is_success) { 
+        $data->{'cmd_status'} = 'OK';
+        }
+        else { 
         $data->{'cmd_status'} = 'NOTOK';
         $data->{'cmd_return'} = 'Server returned error ' . $response->content;
+    }
         return $data;
     }
 }

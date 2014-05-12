@@ -53,16 +53,14 @@ sub psgi_app {
     . $env->{REQUEST_URI};
   my $content = '';
   my $s;
-  while (read($env->{'psgi.input'}, $s, 100)) {
+  while ($env->{'psgi.input'}->read($s, 100)) {
     $content .= $s;
   }
   my $req_index = \$self->{req_index};
   if (!$self->{record}) {
-    $DB::single = 1;
     my $expected = $self->{req_resp}->[$$req_index]->{request}->{content};
     $expected = $expected eq "" ? $expected : JSON->new->utf8(1)->allow_nonref->decode($expected);
     my $actual = $content eq "" ? $content : JSON->new->utf8(1)->allow_nonref->decode($content);
-
     if (  $self->{req_resp}->[$$req_index]->{request}->{verb} eq $env->{REQUEST_METHOD}
       and $self->{req_resp}->[$$req_index]->{request}->{uri} eq $uri
       and (   $self->{req_resp}->[$$req_index]->{request}->{content} eq $content

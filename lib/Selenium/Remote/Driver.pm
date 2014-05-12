@@ -305,7 +305,6 @@ has 'remote_conn' => (
             remote_server_addr => $self->remote_server_addr,
             port               => $self->port,
             ua                 => $self->ua,
-            testing            => $self->testing
         );
     },
 );
@@ -389,21 +388,20 @@ sub BUILD {
     my $self = shift;
 
     # disable server connection when testing attribute is on
-    # unless ($self->testing) {
+    unless ($self->testing) {
 
         if ($self->has_desired_capabilities) {
             $self->new_desired_session( $self->desired_capabilities );
         }
         else {
             # Connect to remote server & establish a new session
-            $DB::single = 1;
             $self->new_session( $self->extra_capabilities );
         }
 
         if ( !( defined $self->session_id ) ) {
             croak "Could not establish a session with the remote server\n";
         }
-    # }
+    }
 }
 
 sub new_from_caps {
@@ -427,10 +425,13 @@ sub DEMOLISH {
 # (url & JSON), send commands & receive processed response from the server.
 sub _execute_command {
     my ( $self, $res, $params ) = @_;
-    $params->{'session_id'} = $self->session_id;
     my $rest_meth = $res->{command};
     my $rest_client = $self->remote_conn->rest_client; 
     if ($rest_client->can($rest_meth)) { 
+        if ($rest_client->spec->{methods}->{$rest_meth}->{method} =~ /^(?:POST|PUT|PATCH)$/i) { 
+            $params = { payload => $params };
+        }
+        $params->{'sessionId'} = $self->session_id;
         my $raw_response  = $rest_client->$rest_meth($params);
         my $resp = $self->remote_conn->_process_response($raw_response);
         if ( ref($resp) eq 'HASH' ) {
@@ -504,7 +505,7 @@ sub _request_new_session {
 
     # command => 'newSession' to fool the tests of commands implemented
     # TODO: rewrite the testing better, this is so fragile.
-    my $resp = $self->remote_conn->rest_client->newSession($args);
+    my $resp = $self->remote_conn->rest_client->newSession({payload => $args});
     $resp = $self->remote_conn->_process_response($resp);
     if ( ( defined $resp->{'sessionId'} ) && $resp->{'sessionId'} ne '' ) {
         $self->session_id( $resp->{'sessionId'} );
