@@ -441,7 +441,7 @@ sub _execute_command {
         my $resp = $self->remote_conn->_process_response($raw_response);
         if ( ref($resp) eq 'HASH' ) {
             if ( $resp->{cmd_status} && $resp->{cmd_status} eq 'OK' ) {
-                return $resp->{cmd_return};
+                return $resp->{cmd_return} // 1;
             }
             else {
                 my $msg = "Error while executing command";
@@ -985,7 +985,7 @@ sub get_window_handles {
 sub get_window_size {
     my ( $self, $window ) = @_;
     $window = ( defined $window ) ? $window : 'current';
-    my $res = { 'command' => 'getWindowSize', 'windowHandle' => $window };
+    my $res = { 'command' => 'getWindowSize', required_params => {'windowHandle' => $window} };
     return $self->_execute_command($res);
 }
 
@@ -1009,7 +1009,7 @@ sub get_window_size {
 sub get_window_position {
     my ( $self, $window ) = @_;
     $window = ( defined $window ) ? $window : 'current';
-    my $res = { 'command' => 'getWindowPosition', 'windowHandle' => $window };
+    my $res = { 'command' => 'getWindowPosition', required_params => { 'windowHandle' => $window } };
     return $self->_execute_command($res);
 }
 
@@ -1524,10 +1524,9 @@ sub set_window_position {
     };
     my $params = { 'x' => $x, 'y' => $y };
     my $ret = $self->_execute_command( $res, { payload => $params } );
-    if ( $ret =~ m/204/g ) {
-        return 1;
-    }
-    else { return 0; }
+    # if everything went accordingly, _execute_command returns an empty
+    # string
+    return $ret; 
 }
 
 =head2 set_window_size
@@ -1560,10 +1559,9 @@ sub set_window_size {
     };
     my $params = { 'height' => $height, 'width' => $width };
     my $ret = $self->_execute_command( $res, { payload => $params } );
-    if ( $ret =~ m/204/g ) {
-        return 1;
-    }
-    else { return 0; }
+    # if everything went accordingly, _execute_command returns an empty
+    # string
+    return $ret; 
 }
 
 =head2 get_all_cookies

@@ -138,7 +138,6 @@ IME: {
 }
 
 LOAD_PAGE: {
-    $DB::single = 1;
     $driver->get("$website/index.html");
     pass('Loaded home page');
     $ret = $driver->get_title();
