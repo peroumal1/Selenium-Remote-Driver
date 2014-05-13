@@ -252,26 +252,26 @@ available here.
 =cut
 
 has 'remote_server_addr' => (
-    is      => 'rw',
-    coerce  => sub { ( defined($_[0]) ? $_[0] : 'localhost' )},
+    is     => 'rw',
+    coerce => sub { ( defined( $_[0] ) ? $_[0] : 'localhost' ) },
     default => sub {'localhost'},
 );
 
 has 'browser_name' => (
-    is      => 'rw',
-    coerce  => sub { ( defined($_[0]) ? $_[0] : 'firefox' )},
+    is     => 'rw',
+    coerce => sub { ( defined( $_[0] ) ? $_[0] : 'firefox' ) },
     default => sub {'firefox'},
 );
 
 has 'platform' => (
-    is      => 'rw',
-    coerce  => sub { ( defined($_[0]) ? $_[0] : 'ANY' )},
+    is     => 'rw',
+    coerce => sub { ( defined( $_[0] ) ? $_[0] : 'ANY' ) },
     default => sub {'ANY'},
 );
 
 has 'port' => (
-    is      => 'rw',
-    coerce  => sub { ( defined($_[0]) ? $_[0] : '4444' )},
+    is     => 'rw',
+    coerce => sub { ( defined( $_[0] ) ? $_[0] : '4444' ) },
     default => sub {'4444'},
 );
 
@@ -295,6 +295,7 @@ has 'default_finder' => (
 has 'session_id' => (
     is      => 'rw',
     default => sub {undef},
+    clearer => 1,
 );
 
 has 'remote_conn' => (
@@ -316,8 +317,8 @@ has 'ua' => (
 
 
 has 'auto_close' => (
-    is      => 'rw',
-    coerce  => sub { ( defined($_[0]) ? $_[0] : 1 )},
+    is     => 'rw',
+    coerce => sub { ( defined( $_[0] ) ? $_[0] : 1 ) },
     default => sub {1},
 );
 
@@ -360,12 +361,14 @@ has 'extra_capabilities' => (
 );
 
 has 'firefox_profile' => (
-    is        => 'rw',
-    coerce    => sub {
+    is     => 'rw',
+    coerce => sub {
         my $profile = shift;
-        unless (Scalar::Util::blessed($profile)
-          && $profile->isa('Selenium::Remote::Driver::Firefox::Profile')) {
-            croak "firefox_profile should be a Selenium::Remote::Driver::Firefox::Profile\n";
+        unless ( Scalar::Util::blessed($profile)
+            && $profile->isa('Selenium::Remote::Driver::Firefox::Profile') )
+        {
+            croak
+              "firefox_profile should be a Selenium::Remote::Driver::Firefox::Profile\n";
         }
 
         return $profile->_encode;
@@ -380,17 +383,17 @@ has 'desired_capabilities' => (
 );
 
 has 'testing' => (
-    is => 'rw',
-    default => sub { 0 },
+    is      => 'rw',
+    default => sub {0},
 );
 
 sub BUILD {
     my $self = shift;
 
     # disable server connection when testing attribute is on
-    unless ($self->testing) {
+    unless ( $self->testing ) {
 
-        if ($self->has_desired_capabilities) {
+        if ( $self->has_desired_capabilities ) {
             $self->new_desired_session( $self->desired_capabilities );
         }
         else {
@@ -405,9 +408,9 @@ sub BUILD {
 }
 
 sub new_from_caps {
-    my ($self, %args) = @_;
+    my ( $self, %args ) = @_;
 
-    if (not exists $args{desired_capabilities}) {
+    if ( not exists $args{desired_capabilities} ) {
         $args{desired_capabilities} = {};
     }
 
@@ -424,21 +427,17 @@ sub DEMOLISH {
 # end user. This method is used by Driver to set up all the parameters
 # (url & JSON), send commands & receive processed response from the server.
 sub _execute_command {
-    my ( $self, $res, $raw_params ) = @_;
-    my $rest_meth = $res->{command};
-    my $rest_client = $self->remote_conn->rest_client; 
-    my $params;
-    if ($rest_client->can($rest_meth)) { 
-        if ($rest_client->spec->{methods}->{$rest_meth}->{method} =~ /^(?:POST|PUT|PATCH)$/i) { 
-            $params = { payload => $raw_params };
+    my ( $self, $res, $params ) = @_;
+    my $rest_meth   = $res->{command};
+    my $rest_client = $self->remote_conn->rest_client;
+    if ( $rest_client->can($rest_meth) ) {
+        if ( $res->{required_params} ) {
+            foreach my $p ( keys %{ $res->{required_params} } ) {
+                $params->{$p} = $res->{required_params}->{$p};
+            }
         }
-        $DB::single = 1;
-        my @required_params = @{$rest_client->spec->{methods}->{$rest_meth}->{required_params}} if ($rest_client->spec->{methods}->{$rest_meth}->{required_params});
-        foreach my $p (@required_params) {
-            $params->{$p} = delete $raw_params->{$p} unless ($p eq 'sessionId');
-        }
-        $params->{'sessionId'} = $self->session_id;
-        my $raw_response  = $rest_client->$rest_meth($params);
+        $params->{'sessionId'} = $self->session_id if ( $self->session_id );
+        my $raw_response = $rest_client->$rest_meth($params);
         my $resp = $self->remote_conn->_process_response($raw_response);
         if ( ref($resp) eq 'HASH' ) {
             if ( $resp->{cmd_status} && $resp->{cmd_status} eq 'OK' ) {
@@ -490,9 +489,11 @@ sub new_session {
         $args->{desiredCapabilities}->{proxy} = $self->proxy;
     }
 
-    if ($args->{desiredCapabilities}->{browserName} =~ /firefox/i
-        && $self->has_firefox_profile) {
-        $args->{desiredCapabilities}->{firefox_profile} = $self->firefox_profile;
+    if (   $args->{desiredCapabilities}->{browserName} =~ /firefox/i
+        && $self->has_firefox_profile )
+    {
+        $args->{desiredCapabilities}->{firefox_profile} =
+          $self->firefox_profile;
     }
 
     $self->_request_new_session($args);
@@ -501,9 +502,7 @@ sub new_session {
 sub new_desired_session {
     my ( $self, $caps ) = @_;
 
-    $self->_request_new_session({
-        desiredCapabilities => $caps
-    });
+    $self->_request_new_session( { desiredCapabilities => $caps } );
 }
 
 sub _request_new_session {
@@ -511,7 +510,8 @@ sub _request_new_session {
 
     # command => 'newSession' to fool the tests of commands implemented
     # TODO: rewrite the testing better, this is so fragile.
-    my $resp = $self->remote_conn->rest_client->newSession({payload => $args});
+    my $resp =
+      $self->remote_conn->rest_client->newSession( { payload => $args } );
     $resp = $self->remote_conn->_process_response($resp);
     if ( ( defined $resp->{'sessionId'} ) && $resp->{'sessionId'} ne '' ) {
         $self->session_id( $resp->{'sessionId'} );
@@ -649,7 +649,7 @@ sub send_keys_to_active_element {
     my $params = {
         'value' => \@strings,
     };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 send_keys_to_alert
@@ -683,7 +683,7 @@ sub send_keys_to_prompt {
     my ( $self, $keys ) = @_;
     my $res    = { 'command' => 'sendKeysToPrompt' };
     my $params = { 'text'    => $keys };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 accept_alert
@@ -747,7 +747,7 @@ sub mouse_move_to_location {
     my ( $self, %params ) = @_;
     $params{element} = $params{element}{id} if exists $params{element};
     my $res = { 'command' => 'mouseMoveToLocation' };
-    return $self->_execute_command( $res, \%params );
+    return $self->_execute_command( $res, { payload => \%params } );
 }
 
 =head2 move_to
@@ -807,7 +807,7 @@ sub set_timeout {
     }
     my $res = { 'command' => 'setTimeout' };
     my $params = { 'type' => $type, 'ms' => $ms };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 set_async_script_timeout
@@ -833,7 +833,7 @@ sub set_async_script_timeout {
     }
     my $res    = { 'command' => 'setAsyncScriptTimeout' };
     my $params = { 'ms'      => $ms };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 set_implicit_wait_timeout
@@ -862,7 +862,7 @@ sub set_implicit_wait_timeout {
     my ( $self, $ms ) = @_;
     my $res    = { 'command' => 'setImplicitWaitTimeout' };
     my $params = { 'ms'      => $ms };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 pause
@@ -918,7 +918,7 @@ sub quit {
     my $self = shift;
     my $res = { 'command' => 'quit' };
     $self->_execute_command($res);
-    $self->session_id(undef);
+    $self->clear_session_id;
 }
 
 =head2 get_current_window_handle
@@ -1067,7 +1067,7 @@ sub get {
     my ( $self, $url ) = @_;
     my $res    = { 'command' => 'get' };
     my $params = { 'url'     => $url };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 get_title
@@ -1205,15 +1205,17 @@ sub execute_async_script {
         }
 
         my $params = { 'script' => $script, 'args' => \@args };
-        my $ret = $self->_execute_command( $res, $params );
+        my $ret = $self->_execute_command( $res, { payload => $params } );
 
         # replace any ELEMENTS with WebElement
         if (    ref($ret)
             and ( ref($ret) eq 'HASH' )
             and exists $ret->{'ELEMENT'} )
         {
-            $ret = $self->webelement_class->new( id => $ret->{ELEMENT},
-                driver => $self );
+            $ret = $self->webelement_class->new(
+                id     => $ret->{ELEMENT},
+                driver => $self
+            );
         }
         return $ret;
     }
@@ -1289,8 +1291,10 @@ sub _convert_to_webelement {
         if ( ( keys %$ret == 1 ) and exists $ret->{'ELEMENT'} ) {
 
             # replace an ELEMENT with WebElement
-            return $self->webelement_class->new( id => $ret->{ELEMENT},
-                driver => $self );
+            return $self->webelement_class->new(
+                id     => $ret->{ELEMENT},
+                driver => $self
+            );
         }
 
         my %hash;
@@ -1408,7 +1412,7 @@ sub switch_to_frame {
     else {
         $params = { 'id' => $id };
     }
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 switch_to_window
@@ -1440,7 +1444,7 @@ sub switch_to_window {
     }
     my $res    = { 'command' => 'switchToWindow' };
     my $params = { 'name'    => $name };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 get_speed
@@ -1487,7 +1491,7 @@ sub set_speed {
     }
     my $res    = { 'command' => 'setSpeed' };
     my $params = { 'speed'   => $speed };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 set_window_position
@@ -1514,9 +1518,12 @@ sub set_window_position {
     if ( not defined $x and not defined $y ) {
         croak "X & Y co-ordinates are required";
     }
-    my $res = { 'command' => 'setWindowPosition', 'window_handle' => $window };
+    my $res = {
+        'command'       => 'setWindowPosition',
+        required_params => { windowHandle => $window }
+    };
     my $params = { 'x' => $x, 'y' => $y };
-    my $ret = $self->_execute_command( $res, $params );
+    my $ret = $self->_execute_command( $res, { payload => $params } );
     if ( $ret =~ m/204/g ) {
         return 1;
     }
@@ -1547,9 +1554,12 @@ sub set_window_size {
     if ( not defined $height and not defined $width ) {
         croak "height & width of browser are required";
     }
-    my $res = { 'command' => 'setWindowSize', 'window_handle' => $window };
+    my $res = {
+        'command'       => 'setWindowSize',
+        required_params => { windowHandle => $window }
+    };
     my $params = { 'height' => $height, 'width' => $width };
-    my $ret = $self->_execute_command( $res, $params );
+    my $ret = $self->_execute_command( $res, { payload => $params } );
     if ( $ret =~ m/204/g ) {
         return 1;
     }
@@ -1627,7 +1637,7 @@ sub add_cookie {
         }
     };
 
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 delete_all_cookies
@@ -1666,7 +1676,8 @@ sub delete_cookie_named {
     if ( not defined $cookie_name ) {
         croak "Cookie name not provided";
     }
-    my $res = { 'command' => 'deleteCookieNamed', 'name' => $cookie_name };
+    my $res = { 'command' => 'deleteCookieNamed',
+        required_params => { 'name' => $cookie_name } };
     return $self->_execute_command($res);
 }
 
@@ -1723,7 +1734,8 @@ sub find_element {
     if ( defined $using ) {
         my $res = { 'command' => 'findElement' };
         my $params = { 'using' => $using, 'value' => $query };
-        my $ret_data = eval { $self->_execute_command( $res, $params ); };
+        my $ret_data =
+          eval { $self->_execute_command( $res, { payload => $params } ); };
         if ($@) {
             if ( $@
                 =~ /(An element could not be located on the page using the given search parameters)/
@@ -1739,8 +1751,10 @@ sub find_element {
                 die $@;
             }
         }
-        return $self->webelement_class->new( id => $ret_data->{ELEMENT},
-            driver => $self );
+        return $self->webelement_class->new(
+            id     => $ret_data->{ELEMENT},
+            driver => $self
+        );
     }
     else {
         croak "Bad method, expected - class, class_name, css, id, link,
@@ -1783,7 +1797,8 @@ sub find_elements {
     if ( defined $using ) {
         my $res = { 'command' => 'findElements' };
         my $params = { 'using' => $using, 'value' => $query };
-        my $ret_data = eval { $self->_execute_command( $res, $params ); };
+        my $ret_data =
+          eval { $self->_execute_command( $res, { payload => $params } ); };
         if ($@) {
             if ( $@
                 =~ /(An element could not be located on the page using the given search parameters)/
@@ -1808,7 +1823,7 @@ sub find_elements {
                 )
             );
         }
-        return wantarray? @{$elem_obj_arr} : $elem_obj_arr ;
+        return wantarray ? @{$elem_obj_arr} : $elem_obj_arr;
     }
     else {
         croak "Bad method, expected - class, class_name, css, id, link,
@@ -1854,9 +1869,13 @@ sub find_child_element {
     }
     my $using = ( defined $method ) ? $method : $self->default_finder;
     if ( exists FINDERS->{$using} ) {
-        my $res = { 'command' => 'findChildElement', 'id' => $elem->{id} };
+        my $res = {
+            'command'       => 'findChildElement',
+            required_params => { 'id' => $elem->{id} }
+        };
         my $params = { 'using' => FINDERS->{$using}, 'value' => $query };
-        my $ret_data = eval { $self->_execute_command( $res, $params ); };
+        my $ret_data =
+          eval { $self->_execute_command( $res, { payload => $params } ); };
         if ($@) {
             if ( $@
                 =~ /(An element could not be located on the page using the given search parameters)/
@@ -1872,8 +1891,10 @@ sub find_child_element {
                 die $@;
             }
         }
-        return $self->webelement_class->new( id => $ret_data->{ELEMENT},
-            driver => $self );
+        return $self->webelement_class->new(
+            id     => $ret_data->{ELEMENT},
+            driver => $self
+        );
     }
     else {
         croak "Bad method, expected - class, class_name, css, id, link,
@@ -1915,9 +1936,11 @@ sub find_child_elements {
     }
     my $using = ( defined $method ) ? $method : $self->default_finder;
     if ( exists FINDERS->{$using} ) {
-        my $res = { 'command' => 'findChildElements', 'id' => $elem->{id} };
+        my $res = { 'command' => 'findChildElements',
+            required_params => { 'id' => $elem->{id} } };
         my $params = { 'using' => FINDERS->{$using}, 'value' => $query };
-        my $ret_data = eval { $self->_execute_command( $res, $params ); };
+        my $ret_data =
+          eval { $self->_execute_command( $res, { payload => $params } ); };
         if ($@) {
             if ( $@
                 =~ /(An element could not be located on the page using the given search parameters)/
@@ -1936,9 +1959,10 @@ sub find_child_elements {
         my $elem_obj_arr;
         my $i = 0;
         foreach (@$ret_data) {
-            $elem_obj_arr->[$i] =
-              $self->webelement_class->new( id => $_->{ELEMENT},
-                driver => $self );
+            $elem_obj_arr->[$i] = $self->webelement_class->new(
+                id     => $_->{ELEMENT},
+                driver => $self
+            );
             $i++;
         }
         return wantarray ? @{$elem_obj_arr} : $elem_obj_arr;
@@ -1971,8 +1995,10 @@ sub get_active_element {
         croak $@;
     }
     else {
-        return $self->webelement_class->new( id => $ret_data->{ELEMENT},
-            driver => $self );
+        return $self->webelement_class->new(
+            id     => $ret_data->{ELEMENT},
+            driver => $self
+        );
     }
 }
 
@@ -2009,7 +2035,7 @@ sub send_modifier {
         value  => $modifier,
         isdown => $isdown
     };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 compare_elements
@@ -2033,9 +2059,11 @@ sub send_modifier {
 sub compare_elements {
     my ( $self, $elem1, $elem2 ) = @_;
     my $res = {
-        'command' => 'elementEquals',
-        'id'      => $elem1->{id},
-        'other'   => $elem2->{id}
+        'command'       => 'elementEquals',
+        required_params => {
+            'id'    => $elem1->{id},
+            'other' => $elem2->{id}
+        },
     };
     return $self->_execute_command($res);
 }
@@ -2071,7 +2099,7 @@ sub click {
     }
     my $res    = { 'command' => 'click' };
     my $params = { 'button'  => $button };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 double_click
@@ -2157,7 +2185,7 @@ sub upload_file {
     my $params = {
         file => encode_base64($string)          # base64-encoded string
     };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 get_text

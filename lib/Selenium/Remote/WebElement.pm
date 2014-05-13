@@ -25,10 +25,9 @@ has 'id' => (
 );
 
 has 'driver' => (
-    is => 'rw',
+    is      => 'rw',
     handles => [qw(_execute_command)],
 );
-
 
 
 =head2 click
@@ -43,7 +42,8 @@ has 'driver' => (
 
 sub click {
     my ($self) = @_;
-    my $res = { 'command' => 'clickElement', 'id' => $self->id };
+    my $res = { 'command' => 'clickElement',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -60,7 +60,8 @@ sub click {
 
 sub submit {
     my ($self) = @_;
-    my $res = { 'command' => 'submitElement', 'id' => $self->id };
+    my $res = { 'command' => 'submitElement',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -91,12 +92,13 @@ sub submit {
 
 sub send_keys {
     my ( $self, @strings ) = @_;
-    my $res = { 'command' => 'sendKeysToElement', 'id' => $self->id };
+    my $res = { 'command' => 'sendKeysToElement',
+        required_params => { 'id' => $self->id } };
     map { $_ .= "" } @strings;
     my $params = {
         'value' => \@strings,
     };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 is_selected
@@ -115,7 +117,8 @@ sub send_keys {
 
 sub is_selected {
     my ($self) = @_;
-    my $res = { 'command' => 'isElementSelected', 'id' => $self->id };
+    my $res = { 'command' => 'isElementSelected',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -133,7 +136,8 @@ sub is_selected {
 
 sub set_selected {
     my ($self) = @_;
-    my $res = { 'command' => 'setElementSelected', 'id' => $self->id };
+    my $res = { 'command' => 'setElementSelected',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -155,7 +159,8 @@ sub set_selected {
 
 sub toggle {
     my ($self) = @_;
-    my $res = { 'command' => 'toggleElement', 'id' => $self->id };
+    my $res = { 'command' => 'toggleElement',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -174,7 +179,8 @@ sub toggle {
 
 sub is_enabled {
     my ($self) = @_;
-    my $res = { 'command' => 'isElementEnabled', 'id' => $self->id };
+    my $res = { 'command' => 'isElementEnabled',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -194,7 +200,8 @@ sub is_enabled {
 
 sub get_element_location {
     my ($self) = @_;
-    my $res = { 'command' => 'getElementLocation', 'id' => $self->id };
+    my $res = { 'command' => 'getElementLocation',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -217,7 +224,8 @@ sub get_element_location {
 
 sub get_element_location_in_view {
     my ($self) = @_;
-    my $res = { 'command' => 'getElementLocationInView', 'id' => $self->id };
+    my $res = { 'command' => 'getElementLocationInView',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -236,7 +244,8 @@ sub get_element_location_in_view {
 
 sub get_tag_name {
     my ($self) = @_;
-    my $res = { 'command' => 'getElementTagName', 'id' => $self->id };
+    my $res = { 'command' => 'getElementTagName',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -252,7 +261,8 @@ sub get_tag_name {
 
 sub clear {
     my ($self) = @_;
-    my $res = { 'command' => 'clearElement', 'id' => $self->id };
+    my $res = { 'command' => 'clearElement',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -279,9 +289,11 @@ sub get_attribute {
         croak 'Attribute name not provided';
     }
     my $res = {
-        'command' => 'getElementAttribute',
-        'id'      => $self->id,
-        'name'    => $attr_name,
+        'command'       => 'getElementAttribute',
+        required_params => {
+            'id'   => $self->id,
+            'name' => $attr_name,
+        },
     };
     return $self->_execute_command($res);
 }
@@ -319,7 +331,8 @@ sub get_value {
 
 sub is_displayed {
     my ($self) = @_;
-    my $res = { 'command' => 'isElementDisplayed', 'id' => $self->id };
+    my $res = { 'command' => 'isElementDisplayed',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -344,12 +357,13 @@ sub drag {
     if ( ( not defined $x ) || ( not defined $y ) ) {
         croak 'X & Y pixel coordinates not provided';
     }
-    my $res = { 'command' => 'dragElement', 'id' => $self->id };
+    my $res =
+      { 'command' => 'dragElement', required_params => { 'id' => $self->id } };
     my $params = {
         'x' => $x,
         'y' => $y,
     };
-    return $self->_execute_command( $res, $params );
+    return $self->_execute_command( $res, { payload => $params } );
 }
 
 =head2 get_size
@@ -368,7 +382,8 @@ sub drag {
 
 sub get_size {
     my ($self) = @_;
-    my $res = { 'command' => 'getElementSize', 'id' => $self->id };
+    my $res = { 'command' => 'getElementSize',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -387,7 +402,8 @@ sub get_size {
 
 sub get_text {
     my ($self) = @_;
-    my $res = { 'command' => 'getElementText', 'id' => $self->id };
+    my $res = { 'command' => 'getElementText',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
@@ -417,8 +433,10 @@ sub get_css_attribute {
     }
     my $res = {
         'command'       => 'getElementValueOfCssProperty',
-        'id'            => $self->id,
-        'property_name' => $attr_name,
+        required_params => {
+            'id'            => $self->id,
+            'propertyName' => $attr_name,
+        },
     };
     return $self->_execute_command($res);
 }
@@ -435,7 +453,8 @@ sub get_css_attribute {
 
 sub describe {
     my ($self) = @_;
-    my $res = { 'command' => 'describeElement', 'id' => $self->id };
+    my $res = { 'command' => 'describeElement',
+        required_params => { 'id' => $self->id } };
     return $self->_execute_command($res);
 }
 
