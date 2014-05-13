@@ -1271,7 +1271,7 @@ sub execute_script {
         }
 
         my $params = { 'script' => $script, 'args' => [@args] };
-        my $ret = $self->_execute_command( $res, $params );
+        my $ret = $self->_execute_command( $res, { payload =>  $params} );
 
         return $self->_convert_to_webelement($ret);
     }
