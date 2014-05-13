@@ -424,12 +424,18 @@ sub DEMOLISH {
 # end user. This method is used by Driver to set up all the parameters
 # (url & JSON), send commands & receive processed response from the server.
 sub _execute_command {
-    my ( $self, $res, $params ) = @_;
+    my ( $self, $res, $raw_params ) = @_;
     my $rest_meth = $res->{command};
     my $rest_client = $self->remote_conn->rest_client; 
+    my $params;
     if ($rest_client->can($rest_meth)) { 
         if ($rest_client->spec->{methods}->{$rest_meth}->{method} =~ /^(?:POST|PUT|PATCH)$/i) { 
-            $params = { payload => $params };
+            $params = { payload => $raw_params };
+        }
+        $DB::single = 1;
+        my @required_params = @{$rest_client->spec->{methods}->{$rest_meth}->{required_params}} if ($rest_client->spec->{methods}->{$rest_meth}->{required_params});
+        foreach my $p (@required_params) {
+            $params->{$p} = delete $raw_params->{$p} unless ($p eq 'sessionId');
         }
         $params->{'sessionId'} = $self->session_id;
         my $raw_response  = $rest_client->$rest_meth($params);
@@ -979,7 +985,7 @@ sub get_window_handles {
 sub get_window_size {
     my ( $self, $window ) = @_;
     $window = ( defined $window ) ? $window : 'current';
-    my $res = { 'command' => 'getWindowSize', 'window_handle' => $window };
+    my $res = { 'command' => 'getWindowSize', 'windowHandle' => $window };
     return $self->_execute_command($res);
 }
 
@@ -1003,7 +1009,7 @@ sub get_window_size {
 sub get_window_position {
     my ( $self, $window ) = @_;
     $window = ( defined $window ) ? $window : 'current';
-    my $res = { 'command' => 'getWindowPosition', 'window_handle' => $window };
+    my $res = { 'command' => 'getWindowPosition', 'windowHandle' => $window };
     return $self->_execute_command($res);
 }
 
